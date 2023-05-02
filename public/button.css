@@ -1,0 +1,90 @@
+/* From https://codepen.io/CiTA/pen/YBQjVQ */
+.btn {
+  font-family: "Source Sans Pro", sans-serif;
+  font-weight: 900;
+  padding: .5rem;
+  /*font-size: 1rem;*/
+  border-radius: 2.5rem/100%;
+  position: relative;
+  min-width: 15rem;
+  max-width: 90vw;
+  overflow: hidden;
+  border: 0;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 330ms;
+}
+.btn + .btn {
+  margin-top: 1rem;
+}
+.btn span {
+  position: relative;
+  z-index: 1;
+}
+.btn:before {
+  content: "";
+  background-color: #21D4FD;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: scale(4) translateX(-100%);
+  transition: all 495ms ease-out;
+}
+.btn:hover:before, .btn:focus:before, .btn:active:before {
+  transform: scale(4) translate(37%);
+}
+
+.btn--alpha {
+  background-color: #21D4FD;
+  color: #B721FF;
+}
+.btn--alpha:before {
+  background-color: #B721FF;
+  background-image: linear-gradient(to right, #B721FF 30%, #21D4FD 100%);
+  position: absolute;
+}
+.btn--alpha:hover, .btn--alpha:focus, .btn--alpha:active {
+  color: #21D4FD;
+}
+
+.btn--beta {
+  background-color: #08AEEA;
+  color: #2AF598;
+}
+.btn--beta:before {
+  background-color: #2AF598;
+  background-image: linear-gradient(to right, #2AF598 30%, #08AEEA 100%);
+  position: absolute;
+}
+.btn--beta:hover, .btn--beta:focus, .btn--beta:active {
+  color: #08AEEA;
+}
+
+.btn--gamma {
+  background-color: #FEE140;
+  color: #FA709A;
+}
+.btn--gamma:before {
+  background-color: #FA709A;
+  background-image: linear-gradient(to right, #FA709A 30%, #FEE140 100%);
+  position: absolute;
+}
+.btn--gamma:hover, .btn--gamma:focus, .btn--gamma:active {
+  color: #FEE140;
+}
+
+.btn--delta {
+  background-color: #3EECAC;
+  color: #EE74E1;
+}
+.btn--delta:before {
+  background-color: #EE74E1;
+  background-image: linear-gradient(to right, #EE74E1 30%, #3EECAC 100%);
+  position: absolute;
+}
+.btn--delta:hover, .btn--delta:focus, .btn--delta:active {
+  color: #3EECAC;
+}

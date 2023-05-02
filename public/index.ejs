@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html style="border-top: 10px solid #7e57c2; background-color: ghostwhite;">
+<head>
+<title>👀 GitHub Pages Viewer</title>
+<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
+
+<link rel=stylesheet href=button.css>
+<link rel=stylesheet href=input.css>
+<!--<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">-->
+<!--<link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.grey-orange.min.css">-->
+
+<!-- Icons -->
+<link rel="icon" type="image/svg" sizes="192x192" href="/favicon.svg">
+
+<style>
+/* pt-serif-regular - latin */
+@font-face {
+	font-display: swap;
+	font-family: "PT Serif";
+	font-style: normal;
+	font-weight: 400;
+	src: url("https://gomakethings.com/fonts/pt-serif-v11-latin-regular.woff2") format("woff2"), url("https://gomakethings.com/fonts/pt-serif-v11-latin-regular.woff") format("woff");
+}
+/* pt-serif-italic - latin */
+@font-face {
+	font-display: swap;
+	font-family: "PT Serif";
+	font-style: italic;
+	font-weight: 400;
+	src: url("https://gomakethings.com/fonts/pt-serif-v11-latin-italic.woff2") format("woff2"), url("https://gomakethings.com/fonts/pt-serif-v11-latin-italic.woff") format("woff");
+}
+/* pt-serif-700 - latin */
+@font-face {
+	font-display: swap;
+	font-family: "PT Serif";
+	font-style: normal;
+	font-weight: 700;
+	src: url("https://gomakethings.com/fonts/pt-serif-v11-latin-700.woff2") format("woff2"), url("https://gomakethings.com/fonts/pt-serif-v11-latin-700.woff") format("woff");
+}
+/* pt-serif-700italic - latin */
+@font-face {
+	font-display: swap;
+	font-family: "PT Serif";
+	font-style: italic;
+	font-weight: 700;
+	src: url("https://gomakethings.com/fonts/pt-serif-v11-latin-700italic.woff2") format("woff2"), url("https://gomakethings.com/fonts/pt-serif-v11-latin-700italic.woff") format("woff");
+}
+/* pt-sans-regular - latin */
+@font-face {
+	font-display: swap;
+	font-family: "PT Sans";
+	font-style: normal;
+	font-weight: 400;
+	src: url("https://gomakethings.com/fonts/pt-sans-v12-latin-regular.woff2") format("woff2"), url("https://gomakethings.com/fonts/pt-sans-v12-latin-regular.woff") format("woff");
+}
+/* pt-sans-italic - latin */
+@font-face {
+	font-display: swap;
+	font-family: "PT Sans";
+	font-style: italic;
+	font-weight: 400;
+	src: url("https://gomakethings.com/fonts/pt-sans-v12-latin-italic.woff2") format("woff2"), url("https://gomakethings.com/fonts/pt-sans-v12-latin-italic.woff") format("woff");
+}
+/* pt-sans-700 - latin */
+@font-face {
+	font-display: swap;
+	font-family: "PT Sans";
+	font-style: normal;
+	font-weight: 700;
+	src: url("https://gomakethings.com/fonts/pt-sans-v12-latin-700.woff2") format("woff2"), url("https://gomakethings.com/fonts/pt-sans-v12-latin-700.woff") format("woff");
+}
+/* pt-sans-700italic - latin */
+@font-face {
+	font-display: swap;
+	font-family: "PT Sans";
+	font-style: italic;
+	font-weight: 700;
+	src: url("https://gomakethings.com/fonts/pt-sans-v12-latin-700italic.woff2") format("woff2"), url("https://gomakethings.com/fonts/pt-sans-v12-latin-700italic.woff") format("woff");
+}
+
+  h1, h2 {
+    font-family: 'PT Serif', sans-serif;
+  }
+  h1 {
+    font-size: 48px;
+  }
+  h2 {
+    font-size: 32px;
+  }
+  html, body {
+    font-family: 'PT Sans', sans-serif;
+  }
+
+  .wrapper {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+  }
+
+  li {
+    padding: 2px;
+  }
+</style>
+
+</head>
+<body>
+
+<div style="margin: 0 auto; max-width: 700px;">
+<h1>👀 GitHub Pages Viewer</h1>
+
+<p>See all of a user's GitHub repositories that have GitHub pages enabled so you
+can discover cool projects. If you like this site, consider giving it a ⭐ <a
+href=https://github.com/domfarolino/pages>on GitHub</a>.</p>
+
+<% if (!isAuthenticated) { %>
+  <a href=https://github.com/login/oauth/authorize?client_id=Iv1.39df632581ef2834>Login with GitHub</a>
+<% } else{ %>
+  <a href=/api/logout>Logout</a>
+
+  <div class=wrapper>
+    <main>
+      <div class="form__group field">
+        <input class="form__field" name=username type=text id=username placeholder=username>
+        <label class="form__label" for=username>Username</label>
+      </div>
+      <br>
+      <!--<input type=text id=username>-->
+      <button class="btn btn--alpha" id=search>Search GitHub user</button>
+
+      <ul id=output></ul>
+    </main>
+    <aside>
+      <h2>Following</h2>
+      <ul id=following></ul>
+    </aside>
+  </div>
+<% } %>
+</div>
+
+<script>
+window.accessToken = '<%= accessToken %>';
+
+const button = document.querySelector('button#search');
+const following = document.querySelector('ul#following');
+const input = document.querySelector('input#username');
+const output = document.querySelector('ul#output');
+
+function updateUIToMatchURL() {
+  const username = new URL(location.href).searchParams.get('username');
+  if (!username)
+    return;
+
+  input.value = username;
+}
+
+window.onpopstate = e => {
+  updateUIToMatchURL();
+  update();
+}
+
+button.onclick = e => {
+  const newURL = new URL(location.href);
+  newURL.searchParams.set('username', input.value);
+  history.pushState({path: newURL.toString()}, '', newURL.toString());
+  update();
+}
+
+// Some bootstrapping code.
+window.onload = e => {
+  if (!window.accessToken)
+    return;
+
+  updateUIToMatchURL();
+  update();
+}
+
+// https://stackoverflow.com/a/49860166/3947332.
+function parseLink(data) {
+  let arrData = data.split("link:")
+  data = arrData.length == 2 ? arrData[1] : data;
+  let parsed_data = {};
+
+  arrData = data.split(",");
+
+  for (let d of arrData){
+    const linkInfo = /<([^>]+)>;\s+rel="([^"]+)"/ig.exec(d)
+    parsed_data[linkInfo[2]] = linkInfo[1];
+  }
+
+  return parsed_data;
+}
+
+const kGitHubHeaders = {
+  'Accept': 'application/vnd.github+json',
+  'Authorization': `Bearer ${window.accessToken}`,
+  'X-GitHub-Api-Version': '2022-11-28',
+}
+
+async function update() {
+  output.replaceChildren();
+  following.replaceChildren();
+
+  const username = input.value;
+  if (username === '')
+    return;
+
+  // Get a list of all the user's repositories, and filter them based on whether they have deployments urls.
+  let nextLink = `https://api.github.com/users/${username}/repos?per_page=50`;
+
+  while (nextLink) {
+    console.log(`Fetching nextLink=${nextLink}`);
+    let response = await fetch(nextLink, {headers: kGitHubHeaders});
+    let currentRepos = await response.json();
+
+    fetchReposAndUpdate(currentRepos);
+    nextLink = '';
+    if (response.headers.get('link'))
+      nextLink = parseLink(response.headers.get('link')).next;
+  }
+
+  setTimeout(populateFollowers, 1000);
+}
+
+async function fetchReposAndUpdate(repositories) {
+  const username = input.value;
+
+  let deployments = repositories.map(repository => {
+    return fetch(repository.deployments_url, {headers: kGitHubHeaders})
+      .then(deployment => deployment.json());
+  });
+
+  deployments = await Promise.all(deployments);
+
+  repositories.forEach((repository, i) => {
+    repository.deployments = deployments[i];
+  });
+
+  repositories = repositories.filter(repository => {
+    return repository.deployments.length;
+  });
+
+  for (const repository of repositories) {
+    const li = output.appendChild(document.createElement('li'));
+    const a = li.appendChild(document.createElement('a'));
+    a.innerText = repository.name;
+    // This will redirect appropriately when custom domains are used.
+    a.href = `https://${username}.github.io/${repository.name}`;
+    a.target = '_blank';
+  }
+}
+
+async function populateFollowers() {
+  const username = input.value;
+
+  // Get a list of all the user's repositories, and filter them based on whether they have deployments urls.
+  let nextLink = `https://api.github.com/users/${username}/following?per_page=50`;
+
+  while (nextLink) {
+    console.log(`Fetching nextLink=${nextLink}`);
+    let response = await fetch(nextLink, {headers: kGitHubHeaders});
+    let users = await response.json();
+
+    updateFollowingUI(users);
+    nextLink = '';
+    if (response.headers.get('link'))
+      nextLink = parseLink(response.headers.get('link')).next;
+  }
+}
+
+function updateFollowingUI(users) {
+  for (const user of users) {
+    const li = following.appendChild(document.createElement('li'));
+    const a = li.appendChild(document.createElement('a'));
+    a.innerText = user.login;
+
+    const newURL = new URL(location.href);
+    newURL.searchParams.set('username', user.login);
+    a.href = newURL;
+    a.onclick = e => {
+      e.preventDefault();
+      history.pushState({path: newURL.toString()}, '', newURL.toString());
+      updateUIToMatchURL();
+      update();
+    }
+  }
+}
+</script>
+</body>
+</html>
