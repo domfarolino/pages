@@ -220,6 +220,11 @@ async function fetchReposAndUpdate(repositories) {
     const li = output.appendChild(document.createElement('li'));
     const a = li.appendChild(document.createElement('a'));
     a.innerText = repository.name;
+
+    if (repository.hasOwnProperty("fork") && repository.fork === "true") {
+      a.innerText += " <div class='repo-fork'></div>";
+    }
+
     // This will redirect appropriately when custom domains are used.
     a.href = `https://${username}.github.io/${repository.name}`;
     a.target = '_blank';
