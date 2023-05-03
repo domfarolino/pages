@@ -12,12 +12,13 @@ passport.use(
       clientSecret: process.env.GITHUB_CLIENT_SECRET
     },
     async (accessToken, refreshToken, profile, done) => {
+      console.log(profile);
       const user = await User.findOne({githubId: profile.id});
       if (user) {
         user.githubId = profile.id;
         user.displayName = profile.displayName;
         user.username = profile.username;
-        user.email = profile.emails[0].value;
+        user.email = profile.emails?.length ? profile.emails[0].value : '';
         await user.save();
         return done(null, user);
       }
@@ -27,7 +28,7 @@ passport.use(
           githubId: profile.id,
           displayName: profile.displayName,
           username: profile.username,
-          email: profile.emails[0].value,
+          email: profile.emails?.length ? profile.emails[0].value : '',
           accessToken,
         }).save();
 

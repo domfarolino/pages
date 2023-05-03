@@ -9,7 +9,8 @@ const userScheme = mongoose.Schema({
   },
   displayName: {
     type: String,
-    required: true,
+    // Sometimes it is not included in the user info.
+    required: false,
     unique: false,
   },
   username: {
@@ -19,8 +20,8 @@ const userScheme = mongoose.Schema({
   },
   email: {
     type: String,
-    required: true,
-    unique: true,
+    // Sometimes it is not included in the user info.
+    unique: false,
   },
   accessToken: {
     type: String,
