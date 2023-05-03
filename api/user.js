@@ -9,7 +9,8 @@ passport.use(
   new GitHubStrategy(
     {
       clientID: process.env.GITHUB_CLIENT_ID,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      callbackURL: process.env.LOCALHOST ? "http://127.0.0.1:8000/api/github-callback" : undefined,
     },
     async (accessToken, refreshToken, profile, done) => {
       console.log(profile);
@@ -19,6 +20,9 @@ passport.use(
         user.displayName = profile.displayName;
         user.username = profile.username;
         user.email = profile.emails?.length ? profile.emails[0].value : '';
+        if (user.accessToken !== accessToken) {
+          user.accessToken = accessToken;
+        }
         await user.save();
         return done(null, user);
       }

@@ -46,7 +46,10 @@ server.listen(kPort, () => {
 });
 
 app.get('/', (request, response) => {
-  response.render('index', {isAuthenticated: request.isAuthenticated(), accessToken: request.isAuthenticated() ? request.user.accessToken : undefined});
+  response.render('index', {
+    isAuthenticated: request.isAuthenticated(),
+    accessToken: request.isAuthenticated() ? request.user.accessToken : undefined,
+  });
 });
 app.use('/', express.static('public'))
 

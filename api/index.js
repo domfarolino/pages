@@ -38,7 +38,8 @@ routes.get('/', (request, response) => {
   response.json({api: true, authenticated: request.isAuthenticated()});
 });
 
-// API index handler
+routes.get('/auth', passport.authenticate('github', { scope: [ 'user:email' ] }));
+
 routes.get('/github-callback', passport.authenticate('github'), (request, response) => {
   console.assert(request.isAuthenticated());
   response.redirect(`/?username=${request.user.username}`);
