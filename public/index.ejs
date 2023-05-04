@@ -218,11 +218,21 @@ async function fetchReposAndUpdate(repositories) {
 
   for (const repository of repositories) {
     const li = output.appendChild(document.createElement('li'));
+    if (repository.fork) {
+      const img = li.appendChild(document.createElement('img'));
+      img.width = '18';
+      img.height = '18';
+      img.src = 'https://img.icons8.com/?size=512&id=120496&format=png';
+      img.style = 'vertical-align: middle;';
+    }
+
     const a = li.appendChild(document.createElement('a'));
     a.innerText = repository.name;
+
     // This will redirect appropriately when custom domains are used.
     a.href = `https://${username}.github.io/${repository.name}`;
     a.target = '_blank';
+
   }
 }
 
