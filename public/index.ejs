@@ -122,6 +122,9 @@ const following = document.querySelector('ul#following');
 const input = document.querySelector('input#username');
 const output = document.querySelector('ul#output');
 
+// list of objects with URL being fetched as key, and its AbortController object as value
+const repoURLAbortControllersList = [];  
+
 function updateUIToMatchURL() {
   const username = new URL(location.href).searchParams.get('username');
   if (!username)
@@ -186,7 +189,16 @@ async function update() {
 
   while (nextLink) {
     console.log(`Fetching nextLink=${nextLink}`);
-    let response = await fetch(nextLink, {headers: kGitHubHeaders});
+
+    // create a new AbortController and add it the list
+    const controller = new AbortController();
+    repoURLAbortControllersList.push({nextLink: controller});
+
+    let options = {
+      headers: kGitHubHeaders,
+      signal: controller.signal
+    };
+    let response = await fetch(nextLink, options);
     let currentRepos = await response.json();
 
     fetchReposAndUpdate(currentRepos);
@@ -229,6 +241,10 @@ async function fetchReposAndUpdate(repositories) {
     const a = li.appendChild(document.createElement('a'));
     a.innerText = repository.name;
 
+    a.onclick = e => {
+      fetchAbortHandler();
+    }
+
     // This will redirect appropriately when custom domains are used.
     a.href = `https://${username}.github.io/${repository.name}`;
     a.target = '_blank';
@@ -267,9 +283,18 @@ function updateFollowingUI(users) {
       e.preventDefault();
       history.pushState({path: newURL.toString()}, '', newURL.toString());
       updateUIToMatchURL();
+      fetchAbortHandler();
       update();
     }
   }
+}
+
+function fetchAbortHandler() {
+  // abort all fetches in list
+  repoURLAbortControllersList.forEach((item) => {
+    let controller = item.values()[0];
+    controller.abort();
+  });
 }
 </script>
 </body>
