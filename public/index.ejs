@@ -122,6 +122,9 @@ const following = document.querySelector('ul#following');
 const input = document.querySelector('input#username');
 const output = document.querySelector('ul#output');
 
+// Used to abort all outstanding fetches upon single-page navigation.
+const abortControllersList = [];
+
 function updateUIToMatchURL() {
   const username = new URL(location.href).searchParams.get('username');
   if (!username)
@@ -181,12 +184,40 @@ async function update() {
   if (username === '')
     return;
 
+  // Abort resources being fetched.
+  abortPendingFetches();
+
   // Get a list of all the user's repositories, and filter them based on whether they have deployments urls.
   let nextLink = `https://api.github.com/users/${username}/repos?per_page=50`;
 
   while (nextLink) {
     console.log(`Fetching nextLink=${nextLink}`);
-    let response = await fetch(nextLink, {headers: kGitHubHeaders});
+
+    const controller = new AbortController();
+    abortControllersList.push(controller);
+    
+    const options = {
+      headers: kGitHubHeaders,
+      signal: controller.signal
+    };
+
+    let response = null;
+
+    try {
+      response = await fetch(nextLink, options);
+    } catch(e) {
+      console.assert(e.name === 'AbortError');
+    }
+
+    if (response === null) {
+      // Note that we must return here instead of "continuing" to the next
+      // iteration because once we receive the signal that fetches are to be
+      // aborted, we should not generate any more as a part of the above while
+      // loop. The abort is intended to cancel all ongoing fetches as well as
+      // any future ones associated with the last single-page navigation.
+      return;
+    }
+
     let currentRepos = await response.json();
 
     fetchReposAndUpdate(currentRepos);
@@ -202,11 +233,31 @@ async function fetchReposAndUpdate(repositories) {
   const username = input.value;
 
   let deployments = repositories.map(repository => {
-    return fetch(repository.deployments_url, {headers: kGitHubHeaders})
+    const nextLink = repository.deployments_url;
+    const controller = new AbortController();
+    abortControllersList.push(controller);
+
+    const options = {
+      headers: kGitHubHeaders,
+      signal: controller.signal
+    };
+
+    return fetch(nextLink, options)
       .then(deployment => deployment.json());
   });
 
-  deployments = await Promise.all(deployments);
+  try {
+    deployments = await Promise.all(deployments);
+  } catch(e) {
+    console.assert(e.name === 'AbortError');
+    deployments = null;
+  }
+
+  // If the pending repository navigations are aborted, immediately return so
+  // that we don't try to do anything with the DOM etc.
+  if (deployments === null) {
+    return;
+  }
 
   repositories.forEach((repository, i) => {
     repository.deployments = deployments[i];
@@ -244,7 +295,28 @@ async function populateFollowers() {
 
   while (nextLink) {
     console.log(`Fetching nextLink=${nextLink}`);
-    let response = await fetch(nextLink, {headers: kGitHubHeaders});
+
+    const controller = new AbortController();
+    abortControllersList.push(controller);
+
+    const options = {
+      headers: kGitHubHeaders,
+      signal: controller.signal
+    };
+
+    let response = null;
+    
+    try {
+      response = await fetch(nextLink, options);
+    } catch(e) {
+      console.assert(e.name === 'AbortError');
+    }
+
+    if (response === null) {
+      // See the corresponding block in `update()` for documentation.
+      return;
+    }
+
     let users = await response.json();
 
     updateFollowingUI(users);
@@ -270,6 +342,17 @@ function updateFollowingUI(users) {
       update();
     }
   }
+}
+
+function abortPendingFetches() {
+  // Abort all fetches since last UI update.
+  abortControllersList.forEach(item => {
+    // Each item in the list is an AbortController object.
+    item.abort();
+  });
+
+  // Deletes all AbortControllers from the list.
+  abortControllersList.length = 0;
 }
 </script>
 </body>
