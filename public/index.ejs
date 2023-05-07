@@ -122,8 +122,7 @@ const following = document.querySelector('ul#following');
 const input = document.querySelector('input#username');
 const output = document.querySelector('ul#output');
 
-// List of objects with URL being fetched as key, and its AbortController as
-// value.
+// Used to abort all outstanding fetches upon single-page navigation.
 const abortControllersList = [];
 
 function updateUIToMatchURL() {
