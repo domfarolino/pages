@@ -347,7 +347,7 @@ function updateFollowingUI(users) {
 
 function abortPendingFetches() {
   // Abort all fetches since last UI update.
-  abortControllersList.map(item => {
+  abortControllersList.forEach(item => {
     // Each item in the list is an AbortController object.
     item.abort();
   });
