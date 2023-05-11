@@ -139,10 +139,14 @@ window.onpopstate = e => {
 }
 
 button.onclick = e => {
-  const newURL = new URL(location.href);
-  newURL.searchParams.set('username', input.value);
-  history.pushState({path: newURL.toString()}, '', newURL.toString());
-  update();
+  userSearchEvent();
+}
+
+input.onkeypress = e => {
+  if (e && e.keyCode === 13) {
+    e.preventDefault;
+    userSearchEvent();  
+  }
 }
 
 // Some bootstrapping code.
@@ -353,6 +357,13 @@ function abortPendingFetches() {
 
   // Deletes all AbortControllers from the list.
   abortControllersList.length = 0;
+}
+
+function userSearchEvent() {
+  const newURL = new URL(location.href);
+  newURL.searchParams.set('username', input.value);
+  history.pushState({path: newURL.toString()}, '', newURL.toString());
+  update();
 }
 </script>
 </body>
