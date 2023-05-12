@@ -96,13 +96,14 @@ href=https://twitter.com/domfarolino>Dom Farolino</a>.</p>
 
   <div class=wrapper>
     <main>
-      <div class="form__group field">
-        <input class="form__field" name=username type=text id=username placeholder=username>
-        <label class="form__label" for=username>Username</label>
-      </div>
-      <br>
-      <!--<input type=text id=username>-->
-      <button class="btn btn--alpha" id=search>Search GitHub user</button>
+      <form>
+        <div class="form__group field">
+          <input class="form__field" name=username type=text id=username placeholder=username>
+          <label class="form__label" for=username>Username</label>
+        </div>
+        <br>
+        <button class="btn btn--alpha" id=search>Search GitHub user</button>
+      </form>
 
       <ul id=output></ul>
     </main>
@@ -117,6 +118,7 @@ href=https://twitter.com/domfarolino>Dom Farolino</a>.</p>
 <script>
 window.accessToken = '<%= accessToken %>';
 
+const form = document.querySelector('form');
 const button = document.querySelector('button#search');
 const following = document.querySelector('ul#following');
 const input = document.querySelector('input#username');
@@ -142,11 +144,16 @@ button.onclick = e => {
   userSearchEvent();
 }
 
-input.onkeypress = e => {
-  if (e && e.keyCode === 13) {
-    e.preventDefault;
-    userSearchEvent();  
-  }
+form.onsubmit = e => {
+  e.preventDefault();
+  userSearchEvent();
+}
+
+function userSearchEvent() {
+  const newURL = new URL(location.href);
+  newURL.searchParams.set('username', input.value);
+  history.pushState({path: newURL.toString()}, '', newURL.toString());
+  update();
 }
 
 // Some bootstrapping code.
@@ -357,13 +364,6 @@ function abortPendingFetches() {
 
   // Deletes all AbortControllers from the list.
   abortControllersList.length = 0;
-}
-
-function userSearchEvent() {
-  const newURL = new URL(location.href);
-  newURL.searchParams.set('username', input.value);
-  history.pushState({path: newURL.toString()}, '', newURL.toString());
-  update();
 }
 </script>
 </body>
