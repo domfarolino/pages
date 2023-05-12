@@ -140,16 +140,8 @@ window.onpopstate = e => {
   update();
 }
 
-button.onclick = e => {
-  userSearchEvent();
-}
-
 form.onsubmit = e => {
   e.preventDefault();
-  userSearchEvent();
-}
-
-function userSearchEvent() {
   const newURL = new URL(location.href);
   newURL.searchParams.set('username', input.value);
   history.pushState({path: newURL.toString()}, '', newURL.toString());
